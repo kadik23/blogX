@@ -4,7 +4,6 @@ if(isset($_GET['code']))
     include("db_connect.php"); 
     $checkCode=$connected->prepare("SELECT SECURITY_CODE FROM user WHERE SECURITY_CODE=:SECURITY_CODE");
     $checkCode->bindParam("SECURITY_CODE",$_GET['code']);
-
     $checkCode->execute();
 
     // ________________________________________

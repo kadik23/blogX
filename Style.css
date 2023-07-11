@@ -1,7 +1,9 @@
 *{
     margin: 0;
     padding: 0;
+    font-family: 'Cairo', sans-serif;
 }
+
 input{
 outline: none;
 }
@@ -100,6 +102,7 @@ outline: none;
     height: 40%;
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
 }
 
 .form_left{
@@ -164,12 +167,6 @@ outline: none;
     cursor: pointer;
     } 
 
-.line{
-    color: white;
-    cursor: default;
-
-
-}
 
 .create{
     margin-left: 0;

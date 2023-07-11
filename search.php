@@ -1,6 +1,11 @@
 <?php 
 session_start();
 include("db_connect.php");
+
+$postBy=$_SESSION['userName'];
+if(!isset($postBy)){
+    header("location:index.php");
+}
 ?>
 
 <!-- -------------------------------------------------------------------------------------------------------- -->
@@ -12,6 +17,9 @@ include("db_connect.php");
     <link rel="stylesheet" href="Style.CSS">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />  
     <title>Searcht</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900;1000&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="post_header">
@@ -21,7 +29,6 @@ include("db_connect.php");
            </div>
          
            <form action="search.php" method="POST" class="post_center_header">
-               <!-- <img  src="./img/search.png" alt="" class="material-symbols-outlined">   -->
                <button  name="search_icon" class="material-symbols-outlined">
                    <svg  style="color: white" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search " viewBox="0 0 16 16" >
                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" fill="white"></path>

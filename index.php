@@ -1,7 +1,7 @@
 <?php 
 // include file to connect DB
 include("db_connect.php");
- 
+   
 // session_abort();
 
 //log in and transition to post.php
@@ -9,26 +9,34 @@ if(isset($_POST['send']))
 {
     $userName=$_POST['username'];
     $userpass=$_POST['password'] ;
-    //    $hashed_password = password_hash($userpass, PASSWORD_BCRYPT, array('cost' => 12));
+    // check in username and pass on DB
     $query=$connected->prepare("SELECT * FROM user WHERE username= :name" );
     $query->bindParam("name",$userName);
     $query->execute();
     if($query->rowCount()==1)
-    {
+    {       //if username are exist in db check if this compte is activated 
         foreach($query AS $var)
-        { if ($var['ACTIVATED']==true){
-            if (password_verify($userpass, $var['password'])) 
-            {
-                // Password is correct
-                //save data in cookies
-                $exp=time()+(60*60*24*30);
-                setcookie($userName,$var['password'],$exp,'/');
+        { if ($var['ACTIVATED'] == true) {
+            // comparaison between password hashed and password
+            if (password_verify($userpass, $var['password'])) {
+         //------------ Password is correct-------------------
+                $randomByte = mt_rand();    // make random byte of new token
+                // add new token in db
+                $query = $connected->prepare("UPDATE user SET token = :token WHERE username = :username");
+                $query->bindValue(':token', $randomByte);
+                $query->bindParam(':username', $userName);
+                $query->execute();
+        
+                // put username in session
                 session_start();
                 $_SESSION['userName']=$userName;
-                $_SESSION['userPassword']=$var['password'];
-                header("location:post.php");
-            } 
-            else echo "<br> <h1>error 501<br> </h1>"; // Password is incorrect 
+
+                 //save Token in cookies
+                $exp=time()+(60*60*24*30);
+                setcookie("token",$randomByte,$exp,'/');
+                header("location:post.php");               
+            }  
+            else echo "<br> <h1>Password is incorrect<br> </h1>";  
             }
         }           
     }          
@@ -39,11 +47,6 @@ if(isset($_POST['logOut']))
     session_start();
     session_unset();
     session_destroy(); 
-    // $exp=time()-3600;
-    // $variable1=$_SESSION['userName'];
-    // $variable2=$_SESSION['userPassword'];
-    // setcookie($variabel,$variable2,$exp,'/');
-    // session_set_cookie_params(0, '/', '', false, true);
     if(count($_COOKIE)>1) 
     {
         $cookies = explode(';', $_SERVER['HTTP_COOKIE']);
@@ -58,28 +61,31 @@ if(isset($_POST['logOut']))
         header("location:index.php");
         die("");
     }
-        // header("Loaction:".$_SERVER["REQUEST_URI"]);
-        
-    // iterate through all cookies and delete them
-    // foreach ($_COOKIE as $name => $value) {
-    //     setcookie($name, '', time() - 3600, '/');
-    //     setcookie($name, '', time() - 3600, '/', $_SERVER['HTTP_HOST']);
-    // }
-
-
-    // $_COOKIE
-    // $exp=time()-1;
-    // setcookie($exp,'/');
-        // session_set_cookie_params('');
 }
 
 if(count($_COOKIE)>1) 
-{
-    header("location:post.php");
-}else { echo "cookies=00"; }
+{  
+    session_start();
+    $username= $_SESSION["userName"];
+    $token=$_COOKIE['token'];
+// comparaison between DATABASE token and COOKIE token 
+    $tokenn=$connected->prepare("SELECT * FROM user WHERE username=:name");
+    $tokenn->bindParam("name",$username);
+    $tokenn->execute();
+    foreach($tokenn AS $T){
+        echo $T['token'];
+        if($token==$T['token'])
+        header("location:post.php");
+        exit;
+    }
+    
+}
+// else {
+//     echo "cookies=00"; 
+// }
 
-print_r($_COOKIE);
-echo count($_COOKIE);
+// print_r($_COOKIE);
+// echo count($_COOKIE);
 ?>
 
 <html lang="en">
@@ -88,8 +94,11 @@ echo count($_COOKIE);
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title> BlogX </title>
-        <link rel="stylesheet" href="./style.css">
+        <link rel="stylesheet" href="./style.CSS">
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900;1000&display=swap" rel="stylesheet">
     </head>
     <body>
 
@@ -107,8 +116,7 @@ echo count($_COOKIE);
                         <?php
                         if(isset($_POST['send']))
                         { if($query->rowCount()==0)
-                            echo '<h4 style="color: rgb(224, 39, 39); margin: 0;">Failed to login! Try again..</h4>
-                            ';
+                            echo '<h4 style="color: rgb(224, 39, 39); margin: 0;">Failed to login! Try again..</h4>';
                         }
                         ?>
                     </div>
@@ -124,7 +132,7 @@ echo count($_COOKIE);
                                 <br>
                                 <input type="password" name="password" placeholder="password"  class="password " required>
                                 <br> <br> <br>
-                                <button class="LOGINN" name="send">LOGIN</button>
+                                <button class='LOGINN' name='send'>LOGIN</button>
                             </form>
                             <br>
                         </div>
@@ -137,7 +145,7 @@ echo count($_COOKIE);
                 </div>
             </div>
             <div class="footer">
-               <h5>BlogX © 2023</h5>
+               <h5>BlogX &copy; 2023</h5>
             <div class="div_social_medea">
                <a href="https://www.instagram.com/s_t_a_n_i_s_k/"> <img src="./img/instagram-clipart-and-white-15.png" alt="" class="social_medea "></a> 
                <a href="mailto:kadiksalah03@gmail.com"><img src="./img/gmail_logo.png" alt="" class="social_medea logo_gmail"></a>
