@@ -28,6 +28,21 @@ if(isset($_POST['suprimer']))
     $query->bindParam("id",$getID);
     $query->execute();
 }
+
+// Retrieve data from AJAX request
+if(isset($_POST['action'])){
+$itemID = $_POST['item_id'];
+$action = $_POST['action'];
+// Update the like or dislike count based on the action
+if ($action === 'like') {
+    $sql =$connected->prepare("UPDATE article SET nbr_likes = nbr_likes + 1 WHERE IDA =:ida");
+    $sql->bindParam(":ida",$itemID);
+    $sql->execute();
+  } elseif ($action === 'dislike') {
+    $sql =$connected->prepare("UPDATE article SET nbr_dislike = nbr_dislike + 1 WHERE IDA =:ida");
+    $sql->bindParam(":ida",$itemID);
+    $sql->execute();  }
+}
 ?>
 
 <!-- -------------------------------------------------------------------------------------------------------------------------  -->
@@ -35,7 +50,7 @@ if(isset($_POST['suprimer']))
 <head>
     <title>Articles</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />  
-    <link rel="stylesheet" href="./Style.css">
+    <link rel="stylesheet" href="./style.css">
     <link rel="shortcut icon" href="./img/logo_black_and_white.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,123 +99,122 @@ if(isset($_POST['suprimer']))
             $user_char=strtoupper($user[0]);
             $user_likes=$var['nbr_likes'];
             $user_dislikes=$var['nbr_dislike'];
-
-            $post= '<div class="div_post">
-
-                        <div class="reaction">
-                        <!-- like -->
-                            <div class="like">';
-                                $jaime='
-                                <p id="jaime"> '.$user_likes.'  </p>   ';
-                                $post2=' 
-                                <button id="click1" >
-                                    <span  class="material-symbols-outlined arrow_modifie">
-                                        arrow_drop_up
-                                    </span>
-                                </button>
-                            </div>
-                        <!-- Dislike -->
-                            <div class="dislike"> ';
-                            $Grr='
-                                <p id="Grr">'.$user_dislikes.'</p>';
-                                $post4='
-                                <button id="click2" >
-                                    <span class="material-symbols-outlined arrow_modifie">
-                                        arrow_drop_down
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class ="post">
-                            <div class ="post_left"> 
-                            <h1 class="maj">'. $user_char.'</h1>
-                        </div>
-
-                        <div class ="post_right">
-                            <div class="title_post"> 
-                                <h3>'.$var['title'].'</h3>
-                            </div> 
-                            <div class="text_post">'
-                                .$var['text'].'
-                            </div>    
-                            <div class="date_post"> 
-                                
-                                    <b class="date_style">Published •'.$var['Date_update'].'</b> 
-                                    <a href="modify.php?edit='. $var['IDA'].'" class=" post_modf " type="submit" name="edit" ><img src="./img/353430-checkbox-edit-pen-pencil_107516.png" alt=""class="image_modf image_modf2"  ></a>         
-                                    <form action="post.php" method="POST" class="post_sup">
-                                        <button name="suprimer" type="submit" class="post_sup" value="'.$var['IDA'].'"><img src="./img/OIP.png" class="image_modf"> </button>
-                                    </form>
-                            </div>
-                        </div>
-
+            $articleId=$var["IDA"];
+            $post = '<div class="div_post">
+            <div class="reaction">
+                <div class="like">
+                    <p id="jaime'.$articleId.'">'.$user_likes.'</p>
+                    <button id="click'.$articleId.'" onclick="Like(this)" class="click1">
+                        <span class="material-symbols-outlined arrow_modifie">
+                            arrow_drop_up
+                        </span>
+                    </button>
                 </div>
-
-                </div> ';
-
-
-            echo $post.$jaime.$post2.$Grr.$post4;
-            // $jaime=3;
-                $jaime=htmlspecialchars($jaime) ; 
-                $jaime=filter_var($jaime,FILTER_SANITIZE_NUMBER_INT);         
-            $integer = intval($jaime);
-            echo gettype($integer);
-            echo $integer;
-            echo '<br>'.$jaime;
-
-        // $update=$connected->prepare("UPDATE article SET nbr_likes=:newlike where IDA=:id");
-        // $update->bindValue("newlike",$integer);
-        // $a=51;
-        // $update->bindParam("id",$a);
-        // $update->execute();
-        // echo var_dump($update->errorInfo());    
+                <div class="dislike">
+                    <p id="Grr'.$articleId.'">'.$user_dislikes.'</p>
+                    <button id="click'.$articleId.'" onclick="Dislike(this)" class="click2">
+                        <span class="material-symbols-outlined arrow_modifie">
+                            arrow_drop_down
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <div class="post">
+                <div class="post_left">
+                    <h1 class="maj">'.$user_char.'</h1>
+                </div>
+                <div class="post_right">
+                    <div class="title_post">
+                        <h3>'.$var['title'].'</h3>
+                    </div>
+                    <div class="text_post">'.$var['text'].'</div>
+                    <div class="date_post">
+                        <b class="date_style">Published •'.$var['Date_update'].'</b>
+                        <a href="modify.php?edit='.$var['IDA'].'" class="post_modf" type="submit" name="edit">
+                            <img src="./img/353430-checkbox-edit-pen-pencil_107516.png" alt="" class="image_modf image_modf2">
+                        </a>
+                        <form action="post.php" method="POST" class="post_sup">
+                            <button name="suprimer" type="submit" class="post_sup" value="'.$var['IDA'].'">
+                                <img src="./img/OIP.png" class="image_modf">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>';
+echo $post;
             }
         ?>
-       
         </div>
     </div>  
 </body>
-<?php
-
-?>
-
+<!-- include jQuery library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+var clicked =false
     
-    var var1=document.getElementById("click1")
-    var counter=document.getElementById("jaime").textContent
-    const b=counter;
-    var1.addEventListener("click",incrementer1)
+function Like(ev) {
+    // extraction article id from btn.id
+    var id = ev.id;
+    var number = parseInt(id.match(/\d+/)[0]);
+    // get counter element
+    var likeCounter = document.getElementById(`jaime${number}`);
+    var currentValue = parseInt(likeCounter.textContent);
+    
+    if (clicked) {
+        likeCounter.textContent = (currentValue - 1).toString();
+        clicked=false
+    } else {
+        likeCounter.textContent = (currentValue+1).toString();
+        clicked=true
+    }
+// send AJAX request to server for updating database record
+    $.ajax({
+        url: 'post.php',
+        method: 'POST',
+        data: { item_id: number, action: 'like' }, // Replace 'like' with the appropriate action value
+        success: function(response) {
+            console.log('Data saved successfully!');
+        },
+        error: function(error) {
+            console.error('An error occurred:', error);
+        }
+    });
 
-    function incrementer1(){
-         var1=document.getElementById("click1")
-        counter=document.getElementById("jaime").textContent
 
-        counter=Number(counter); // counter is now an integer
-        if(counter==Number(b))
-        counter=counter+1 
-        else counter -=1;
-       var str = counter.toString(); // str is now a string
-        document.getElementById("jaime").textContent=str
+}
+
+
+var clicked2=false
+
+function Dislike(ev){
+    var id = ev.id;
+    var number = parseInt(id.match(/\d+/)[0]);
+
+    var dislikeCounter = document.getElementById(`Grr${number}`);
+    var currentValue = parseInt(dislikeCounter.textContent);
+
+    if (clicked2) {
+        dislikeCounter.textContent = (currentValue - 1).toString();
+        clicked2=false
+    } else {
+        dislikeCounter.textContent = (currentValue+1).toString();
+        clicked2=true
     }
 
-    
-
-    var var2=document.getElementById("click2")
-    var counter2=document.getElementById("Grr").textContent
-    const d=counter2;
-    var2.addEventListener("click",incrementer2)
-
-    function incrementer2(){
-        var2=document.getElementById("click2")
-        counter=document.getElementById("Grr").textContent
-
-        counter2=Number(counter2); // counter is now an integer
-        if(counter2==Number(d))
-        counter2+=1; 
-        else counter2 -=1;
-      var  str = counter2.toString(); // str is now a string
-
-        document.getElementById("Grr").textContent=str
-    }
+    // send AJAX request to server for updating database record
+    $.ajax({
+        url: 'post.php',
+        method: 'POST',
+        data: { item_id: number, action: 'dislike' }, // Replace 'like' with the appropriate action value
+        success: function(response) {
+            console.log('Data saved successfully!');
+        },
+        error: function(error) {
+            console.error('An error occurred:', error);
+        }
+    });
+}
     
 </script>
 
